@@ -892,5 +892,4 @@ Console.prototype.readLine = function (options) {
   return fut.wait();
 };
 
-
-exports.Console = new Console;
+exports.Console = require("./func-utils.js").constructLazyInstance(Console);
