@@ -980,8 +980,9 @@ _.extend(Console.prototype, {
       maxIndent = maxIndent + options.bulletPoint.length;
     }
 
-    // Get the maximum width.
-    var max = process.stdout.columns;
+    // Get the maximum width, or if we are not running in a terminal (self-test,
+    // for exmaple), default to 80 columns.
+    var max = process.stdout.columns || 80;
 
     // Wrap the text using the npm wordwrap library.
     var wrappedText = wordwrap(maxIndent, max)(text);
