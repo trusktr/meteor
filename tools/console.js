@@ -510,6 +510,16 @@ var LEVEL_WARN = { code: LEVEL_CODE_WARN };
 var LEVEL_INFO = { code: LEVEL_CODE_INFO };
 var LEVEL_DEBUG = { code: LEVEL_CODE_DEBUG };
 
+// We use a special class to represent the options that we send to the Console
+// because it allows us to call 'instance of' on the last argument of variadic
+// functions. This means that we can keep the signature of infoWrapped,
+// debugWrapped, and warnWrapped roughly the same as info, debug, and warn,
+// which, in turn, is the same as the original signature on the console.
+var ConsoleOptions = function (o) {
+  var self = this;
+  self.options = o;
+}
+
 _.extend(Console.prototype, {
   LEVEL_ERROR: LEVEL_ERROR,
   LEVEL_WARN: LEVEL_WARN,
@@ -585,6 +595,32 @@ _.extend(Console.prototype, {
     }
   },
 
+  // Initializes and returns a new ConsoleOptions object. This allows us to call
+  // 'instance of' on the ConsoleOptions in parseVariadicInput, by ensuring that
+  // the object created with Console.options is, in fact, a new object.
+  options: function (o) {
+    return new ConsoleOptions(o);
+  },
+
+  // Deal with the arguments to a variadic print function that also takes an
+  // optional ConsoleOptions argument at the end.
+  //
+  // Returns an object with keys:
+  //  - opts: The options that were passed in, or an empty object.
+  //  - message: Arguments to the original function, parsed as a string.
+  //
+  _parseVariadicInput: function (args) {
+    var self = this;
+    var msgArgs = args;
+    var opts = {};
+    if (_.last(args) instanceof ConsoleOptions) {
+      msgArgs = _.initial(args);
+      opts = _.last(args).options;
+    }
+    var message = self._format(msgArgs);
+    return { message: message, opts: opts };
+  },
+
   isLevelEnabled: function (levelCode) {
     return (this.verbose || this._logThreshold <= levelCode);
   },
@@ -603,6 +639,29 @@ _.extend(Console.prototype, {
     self._print(LEVEL_DEBUG, message);
   },
 
+  // Version of Console.debug that automatically line wrapps the output.
+  //
+  // Takes in an optional Console.options({}) argument at the end, with the
+  // following options:
+  //   - bulletPoint: start the first line with a given string, then offset the
+  //     subsequent lines by the length of that string. See _wrap for more details.
+  //   - indent: offset the entire string by a specific number of
+  //     characters. See _wrap for more details.
+  //
+  debugWrapped: function(/*arguments*/) {
+    var self = this;
+    if (!self.isDebugEnabled()) return;
+
+    var parsedArgs = self._parseVariadicInput(arguments);
+    var wrapOpts = {
+      indent: parsedArgs.opts.indent,
+      bulletPoint: parsedArgs.opts.bulletPoint
+    };
+
+    var wrappedMessage = self._wrapText(parsedArgs.message, wrapOpts);
+    self._print(LEVEL_DEBUG, wrappedMessage);
+  },
+
   isInfoEnabled: function () {
     return this.isLevelEnabled(LEVEL_CODE_INFO);
   },
@@ -615,6 +674,22 @@ _.extend(Console.prototype, {
 
     var message = self._format(arguments);
     self._print(LEVEL_INFO, message);
+  },
+
+  // Version of Console.info that automatically line wrapps the output. Follows
+  // the same pattern as Console.debugWrapped.
+  infoWrapped: function(/*arguments*/) {
+    var self = this;
+    if (!self.isInfoEnabled()) return;
+
+    var parsedArgs = self._parseVariadicInput(arguments);
+    var wrapOpts = {
+      indent: parsedArgs.opts.indent,
+      bulletPoint: parsedArgs.opts.bulletPoint
+    };
+
+    var wrappedMessage = self._wrapText(parsedArgs.message, wrapOpts);
+    self._print(LEVEL_INFO, wrappedMessage);
   },
 
   isWarnEnabled: function () {
@@ -631,11 +706,42 @@ _.extend(Console.prototype, {
     self._print(LEVEL_WARN, message);
   },
 
+  // Version of Console.warn that automatically line wrapps the output. Follows
+  // the same pattern as Console.debugWrapped.
+  warnWrapped: function(/*arguments*/) {
+    var self = this;
+    if (!self.isWarnEnabled()) return;
+
+    var parsedArgs = self._parseVariadicInput(arguments);
+    var wrapOpts = {
+      indent: parsedArgs.opts.indent,
+      bulletPoint: parsedArgs.opts.bulletPoint
+    };
+
+    var wrappedMessage = self._wrapText(parsedArgs.message, wrapOpts);
+    self._print(LEVEL_WARN, wrappedMessage);
+  },
+
   error: function(/*arguments*/) {
     var self = this;
 
     var message = self._format(arguments);
     self._print(LEVEL_ERROR, message);
+  },
+
+  // Version of Console.error that automatically line wrapps the output. Follows
+  // the same pattern as Console.debugWrapped.
+  errorWrapped: function(/*arguments*/) {
+    var self = this;
+
+    var parsedArgs = self._parseVariadicInput(arguments);
+    var wrapOpts = {
+      indent: parsedArgs.opts.indent,
+      bulletPoint: parsedArgs.opts.bulletPoint
+    };
+
+    var wrappedMessage = self._wrapText(parsedArgs.message, wrapOpts);
+    self._print(LEVEL_ERROR, wrappedMessage);
   },
 
   _legacyWrite: function (level, message) {
@@ -835,7 +941,7 @@ _.extend(Console.prototype, {
     self._progressDisplay = newProgressDisplay;
   },
 
-  // Wraps long strings to the length of user's terminal. Inserts new lines
+  // Wraps long strings to the length of user's terminal. Inserts linebreaks
   // between words when nearing the end of the line. Returns the wrapped string
   // and takes the following arguments:
   //
@@ -854,7 +960,7 @@ _.extend(Console.prototype, {
   // like so:
   //  "  this message is indented by two."
   //  "  => this mesage indented by two and
-  //        and starts with an arrow."
+  //        and also starts with an arrow."
   //
   _wrapText: function (text, options) {
     options = options || {};
@@ -876,10 +982,12 @@ _.extend(Console.prototype, {
 
     // Insert the start string, if applicable.
     if (options.bulletPoint) {
-      // Since the indent argument maxIndents the entire message, the bulletPoint
-      // should also be indented.
-      wrappedText = wrappedText.substring(0, options.indent) +
-          options.bulletPoint +
+      // Save the initial indent level.
+      var initIndent = options.indent ?
+          wrappedText.substring(0, options.indent) : "";
+      // Add together the initial indent (if any), the bullet point and the
+      // remainder of the message.
+      wrappedText = initIndent + options.bulletPoint +
           wrappedText.substring(maxIndent);
     }
 
