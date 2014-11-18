@@ -1,17 +1,19 @@
 ///
-/// utility functions for formatting output to the screen
+/// A set of utility functions for formatting output sent to the screen.
 ///
 /// Console offers several pieces of functionality:
-///   debug / info / warn messages:
-///     Outputs to the screen, optionally with colors (when pretty == true)
-///   'legacy' functions: Console.stdout.write & Console.stderr.write
-///     Make porting code a lot easier (just a regex from process -> Console)
-///   Progress bar support
-///     Displays a progress bar on the screen, but hides it around log messages
-///     (The need to hide it is why we have this class)
+///  - debug / info / warn messages:
+///    Output to the screen, optionally with colors (when pretty == true)
+///  - Automatic wrapping:
+///    Wrap the output to the width of the user's terminal, making sure to not
+///    split the same word over multiple lines.
+///  - Progress bar support
+///    Display a progress bar on the screen, but hide it around log messages.
+///  - 'legacy' functions: Console.stdout.write & Console.stderr.write
+///    Make porting code a lot easier (just a regex from process -> Console)
 ///
-/// In future, we might do things like move all support for verbose mode in here,
-/// and also integrate the buildmessage functionality into here
+/// In future, we might do things like move all support for verbose mode in
+/// here, and also integrate the buildmessage functionality into here
 ///
 
 var _ = require('underscore');
@@ -24,6 +26,7 @@ var buildmessage = require('./buildmessage.js');
 var chalk = require('chalk');
 var cleanup = require('./cleanup.js');
 var utils = require('./utils.js');
+var wordwrap = require('wordwrap');
 
 var PROGRESS_DEBUG = !!process.env.METEOR_PROGRESS_DEBUG;
 var FORCE_PRETTY=undefined;
@@ -34,7 +37,6 @@ if (process.env.METEOR_PRETTY_OUTPUT) {
 if (!process.env.METEOR_COLOR) {
   chalk.enabled = false;
 }
-
 
 var STATUSLINE_MAX_LENGTH = 60;  // XXX unused?
 var STATUS_MAX_LENGTH = 40;
@@ -831,7 +833,59 @@ _.extend(Console.prototype, {
     oldProgressDisplay.depaint();
 
     self._progressDisplay = newProgressDisplay;
+  },
+
+  // Wraps long strings to the length of user's terminal. Inserts new lines
+  // between words when nearing the end of the line. Returns the wrapped string
+  // and takes the following arguments:
+  //
+  // text: the text to wrap
+  // options:
+  //   - bulletPoint: start the first line with a given string, then offset the
+  //     subsequent lines by the length of that string. For example:
+  //     " => some long message starts here
+  //          and then continues here."
+  //   - indent: offset the entire string by a specific number of
+  //     characters. For example:
+  //     "  This entire message is indented
+  //        by two characters."
+  //
+  // Passing in both options will offset the bulletPoint by the indentation,
+  // like so:
+  //  "  this message is indented by two."
+  //  "  => this mesage indented by two and
+  //        and starts with an arrow."
+  //
+  _wrapText: function (text, options) {
+    options = options || {};
+
+    // Compute the maximum offset on the bulk of the message.
+    var maxIndent = 0;
+    if (options.indent && options.indent > 0) {
+      maxIndent = maxIndent + options.indent;
+    }
+    if (options.bulletPoint) {
+      maxIndent = maxIndent + options.bulletPoint.length;
+    }
+
+    // Get the maximum width.
+    var max = process.stdout.columns;
+
+    // Wrap the text using the npm wordwrap library.
+    var wrappedText = wordwrap(maxIndent, max)(text);
+
+    // Insert the start string, if applicable.
+    if (options.bulletPoint) {
+      // Since the indent argument maxIndents the entire message, the bulletPoint
+      // should also be indented.
+      wrappedText = wrappedText.substring(0, options.indent) +
+          options.bulletPoint +
+          wrappedText.substring(maxIndent);
+    }
+
+    return wrappedText;
   }
+
 });
 
 Console.prototype.warning = Console.prototype.warn;
