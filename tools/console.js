@@ -611,11 +611,17 @@ _.extend(Console.prototype, {
   //
   _parseVariadicInput: function (args) {
     var self = this;
-    var msgArgs = args;
-    var opts = {};
+    var msgArgs;
+    var opts;
+    // If the last argument is an instance of ConsoleOptions, then we should
+    // separate it out, and only send the first N-1 arguments to be parsed as a
+    // message.
     if (_.last(args) instanceof ConsoleOptions) {
       msgArgs = _.initial(args);
       opts = _.last(args).options;
+    } else {
+      msgArgs = args;
+      opts = {};
     }
     var message = self._format(msgArgs);
     return { message: message, opts: opts };
@@ -642,7 +648,7 @@ _.extend(Console.prototype, {
   // Version of Console.debug that automatically line wrapps the output.
   //
   // Takes in an optional Console.options({}) argument at the end, with the
-  // following options:
+  // following keys:
   //   - bulletPoint: start the first line with a given string, then offset the
   //     subsequent lines by the length of that string. See _wrap for more details.
   //   - indent: offset the entire string by a specific number of
