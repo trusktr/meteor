@@ -240,6 +240,9 @@ rm -rf node_modules/phantomjs/tmp
 
 npm install http-proxy@1.6.0
 
+npm install wordwrap@0.0.2
+rm -rf node_modules/wordwrap/test
+
 # XXX We ought to be able to get this from the copy in js-analyze rather than in
 # the dev bundle.)
 npm install esprima@1.2.2
