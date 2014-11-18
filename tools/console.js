@@ -512,8 +512,8 @@ var LEVEL_DEBUG = { code: LEVEL_CODE_DEBUG };
 
 // We use a special class to represent the options that we send to the Console
 // because it allows us to call 'instance of' on the last argument of variadic
-// functions. This means that we can keep the signature of infoWrapped,
-// debugWrapped, and warnWrapped roughly the same as info, debug, and warn,
+// functions. This means that we can keep the signature of wrapInfo,
+// wrapDebug, and wrapWarn roughly the same as info, debug, and warn,
 // which, in turn, is the same as the original signature on the console.
 var ConsoleOptions = function (o) {
   var self = this;
@@ -654,7 +654,7 @@ _.extend(Console.prototype, {
   //   - indent: offset the entire string by a specific number of
   //     characters. See _wrap for more details.
   //
-  debugWrapped: function(/*arguments*/) {
+  wrapDebug: function(/*arguments*/) {
     var self = this;
     if (!self.isDebugEnabled()) return;
 
@@ -683,8 +683,8 @@ _.extend(Console.prototype, {
   },
 
   // Version of Console.info that automatically line wrapps the output. Follows
-  // the same pattern as Console.debugWrapped.
-  infoWrapped: function(/*arguments*/) {
+  // the same pattern as Console.wrapDebug.
+  wrapInfo: function(/*arguments*/) {
     var self = this;
     if (!self.isInfoEnabled()) return;
 
@@ -713,8 +713,8 @@ _.extend(Console.prototype, {
   },
 
   // Version of Console.warn that automatically line wrapps the output. Follows
-  // the same pattern as Console.debugWrapped.
-  warnWrapped: function(/*arguments*/) {
+  // the same pattern as Console.wrapDebug.
+  wrapWarn: function(/*arguments*/) {
     var self = this;
     if (!self.isWarnEnabled()) return;
 
@@ -736,8 +736,8 @@ _.extend(Console.prototype, {
   },
 
   // Version of Console.error that automatically line wrapps the output. Follows
-  // the same pattern as Console.debugWrapped.
-  errorWrapped: function(/*arguments*/) {
+  // the same pattern as Console.wrapDebug.
+  wrapError: function(/*arguments*/) {
     var self = this;
 
     var parsedArgs = self._parseVariadicInput(arguments);
