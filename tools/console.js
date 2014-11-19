@@ -34,7 +34,7 @@ if (process.env.METEOR_PRETTY_OUTPUT) {
   FORCE_PRETTY = process.env.METEOR_PRETTY_OUTPUT != '0';
 }
 
-if (!process.env.METEOR_COLOR) {
+if (! process.env.METEOR_COLOR) {
   chalk.enabled = false;
 }
 
@@ -219,7 +219,7 @@ _.extend(ProgressBarRenderer.prototype, {
       .replace(':current', self.curr)
       .replace(':total', self.total)
       .replace(':elapsed', isNaN(elapsed) ? '0.0' : (elapsed / 1000).toFixed(1))
-      .replace(':eta', (isNaN(eta) || !isFinite(eta)) ? '0.0' : (eta / 1000).toFixed(1))
+      .replace(':eta', (isNaN(eta) || ! isFinite(eta)) ? '0.0' : (eta / 1000).toFixed(1))
       .replace(':percent', percent.toFixed(0) + '%');
 
     /* compute the available space (non-zero) for the bar */
@@ -314,7 +314,7 @@ _.extend(ProgressDisplayFull.prototype, {
     var streamColumns = this._stream.columns;
     var statusColumns;
     var progressColumns;
-    if (!streamColumns) {
+    if (! streamColumns) {
       statusColumns = STATUS_MAX_LENGTH;
       progressColumns = 0;
     } else {
@@ -379,7 +379,7 @@ _.extend(StatusPoller.prototype, {
     }
 
     self._pollFiber = Fiber(function () {
-      while (!self._stop) {
+      while (! self._stop) {
         utils.sleepMs(100);
 
         self.statusPoll();
@@ -416,7 +416,7 @@ _.extend(StatusPoller.prototype, {
         } else {
           var fraction = state.done ? 1.0 : (state.current / state.end);
 
-          if (!isNaN(fraction) && fraction >= 0) {
+          if (! isNaN(fraction) && fraction >= 0) {
             progressDisplay.updateProgress(fraction, startTime);
           } else {
             progressDisplay.updateProgress(0, startTime);
@@ -549,7 +549,7 @@ _.extend(Console.prototype, {
     self._pretty = self._progressDisplayEnabled = true;
 
     // Update the screen if anything changed.
-    if (!originalPretty || !originalProgressDisplayEnabled)
+    if (! originalPretty || ! originalProgressDisplayEnabled)
       self._updateProgressDisplay();
 
     try {
@@ -559,7 +559,7 @@ _.extend(Console.prototype, {
       self._pretty = originalPretty;
       self._progressDisplayEnabled = originalProgressDisplayEnabled;
       // Update the screen if anything changed.
-      if (!originalPretty || !originalProgressDisplayEnabled)
+      if (! originalPretty || ! originalProgressDisplayEnabled)
         self._updateProgressDisplay();
     }
   },
@@ -637,7 +637,7 @@ _.extend(Console.prototype, {
 
   debug: function(/*arguments*/) {
     var self = this;
-    if (!self.isDebugEnabled()) {
+    if (! self.isDebugEnabled()) {
       return;
     }
 
@@ -656,7 +656,7 @@ _.extend(Console.prototype, {
   //
   wrapDebug: function(/*arguments*/) {
     var self = this;
-    if (!self.isDebugEnabled()) return;
+    if (! self.isDebugEnabled()) { return; }
 
     var parsedArgs = self._parseVariadicInput(arguments);
     var wrapOpts = {
@@ -674,7 +674,7 @@ _.extend(Console.prototype, {
 
   info: function(/*arguments*/) {
     var self = this;
-    if (!self.isInfoEnabled()) {
+    if (! self.isInfoEnabled()) {
       return;
     }
 
@@ -686,7 +686,7 @@ _.extend(Console.prototype, {
   // the same pattern as Console.wrapDebug.
   wrapInfo: function(/*arguments*/) {
     var self = this;
-    if (!self.isInfoEnabled()) return;
+    if (! self.isInfoEnabled()) { return; }
 
     var parsedArgs = self._parseVariadicInput(arguments);
     var wrapOpts = {
@@ -704,7 +704,7 @@ _.extend(Console.prototype, {
 
   warn: function(/*arguments*/) {
     var self = this;
-    if (!self.isWarnEnabled()) {
+    if (! self.isWarnEnabled()) {
       return;
     }
 
@@ -716,7 +716,7 @@ _.extend(Console.prototype, {
   // the same pattern as Console.wrapDebug.
   wrapWarn: function(/*arguments*/) {
     var self = this;
-    if (!self.isWarnEnabled()) return;
+    if (! self.isWarnEnabled()) { return; }
 
     var parsedArgs = self._parseVariadicInput(arguments);
     var wrapOpts = {
@@ -806,7 +806,7 @@ _.extend(Console.prototype, {
   success: function (message) {
     var self = this;
 
-    if (!self._pretty) {
+    if (! self._pretty) {
       return message;
     }
     return chalk.green('\u2713 ' + message);  // CHECK MARK
@@ -815,7 +815,7 @@ _.extend(Console.prototype, {
   fail: function (message) {
     var self = this;
 
-    if (!self._pretty) {
+    if (! self._pretty) {
       return message;
     }
     return chalk.red('\u2717 ' + message);  // BALLOT X
@@ -832,7 +832,7 @@ _.extend(Console.prototype, {
   underline: function (message) {
     var self = this;
 
-    if (!self._pretty) {
+    if (! self._pretty) {
       return message;
     }
     return chalk.underline(message);
@@ -841,7 +841,7 @@ _.extend(Console.prototype, {
   bold: function (message) {
     var self = this;
 
-    if (!self._pretty) {
+    if (! self._pretty) {
       return message;
     }
     return chalk.bold(message);
@@ -855,7 +855,7 @@ _.extend(Console.prototype, {
     var self = this;
 
     var message = err.message;
-    if (!message) {
+    if (! message) {
       message = "Unexpected error";
       if (self.verbose) {
         message += " (" + err.toString() + ")";
@@ -903,12 +903,12 @@ _.extend(Console.prototype, {
 
     var newProgressDisplay;
 
-    if (!self._progressDisplayEnabled) {
+    if (! self._progressDisplayEnabled) {
       newProgressDisplay = new ProgressDisplayNone();
-    } else if ((!self._stream.isTTY) || (!self._pretty)) {
+    } else if ((! self._stream.isTTY) || (! self._pretty)) {
       // No progress bar if not in pretty / on TTY.
       newProgressDisplay = new ProgressDisplayNone(self);
-    } else if (self._stream.isTTY && !self._stream.columns) {
+    } else if (self._stream.isTTY && ! self._stream.columns) {
       // We might be in a pseudo-TTY that doesn't support
       // clearLine() and cursorTo(...).
       // It's important that we only enter status message mode
@@ -923,7 +923,7 @@ _.extend(Console.prototype, {
 
     // Start/stop the status poller, so we never block exit
     if (self._progressDisplayEnabled) {
-      if (!self._statusPoller) {
+      if (! self._statusPoller) {
         self._statusPoller = new StatusPoller(self);
       }
     } else {

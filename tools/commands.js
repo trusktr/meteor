@@ -291,7 +291,7 @@ function doRunCommand (options) {
       "sure your device is on the same network, and that the network",
       "configuration allows clients to talk to each other",
       "(no client isolation).",
-      Console.options({bulletPoint: "WARNING: "}));
+      Console.options({ bulletPoint: "WARNING: " }));
   }
 
 
@@ -318,7 +318,7 @@ function doRunCommand (options) {
                   release.current.getDisplayName(),
                   utils.displayRelease(appReleaseParts[0],
                                        appReleaseParts[1]),
-                  Console.options({bulletPoint: " => "}));
+                  Console.options({ bulletPoint: " => " }));
       Console.info();
     }
   }
@@ -509,7 +509,7 @@ main.registerCommand({
   if (options.list) {
     Console.wrapInfo("Available examples:");
     _.each(examples, function (e) {
-      Console.wrapInfo(e, Console.options({indent: 2}));
+      Console.wrapInfo(e, Console.options({ indent: 2 }));
     });
     Console.info();
     Console.wrapInfo(
@@ -796,7 +796,7 @@ var buildCommand = function (options) {
         "Your generated files may get interpreted as source code!",
         "Consider building into a different directory instead ("
           + Console.command("meteor build ../output") + ")",
-        Console.options({indent: 2}));
+        Console.options({ indent: 2 }));
       Console.warn("");
 
     }
@@ -1126,11 +1126,11 @@ main.registerCommand({
     Console.warn();
     Console.warnWrapped(
       "WARNING: Overriding deploy architecture with your local architecture.",
-      Console.options({bulletPoint: " => "}));
+      Console.options({ bulletPoint: " => " }));
     Console.warnWrapped(
       "If your app contains binary code, it may fail in a strange and",
       "unexpected manner",
-      Console.options({bulletPoint: " => "}));
+      Console.options({ bulletPoint: " => " }));
     buildArch = archinfo.host();
   }
 
@@ -2075,6 +2075,8 @@ main.registerCommand({
   hidden: true,
   catalogRefresh: new catalog.Refresh.Never()
 }, function (options) {
+
+
   var p = function (key) {
     if (_.has(options, key))
       return JSON.stringify(options[key]);
