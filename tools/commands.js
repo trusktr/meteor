@@ -133,8 +133,8 @@ main.registerCommand({
     Console.error("none");
     return 1;
   } else {
-    Console.error(release.current.name);
-    Console.error(files.getToolsVersion());
+    Console.info(release.current.name);
+    Console.info(files.getToolsVersion());
     return 0;
   }
 });
