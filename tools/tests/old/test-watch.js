@@ -294,4 +294,4 @@ Fiber(function () {
 
 }).run();
 
-
+process.exit(0);
