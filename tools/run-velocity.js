@@ -17,7 +17,7 @@ var _ = require('underscore');
 // 3. Open the app server with PhantomJS to run client side tests.
 // 4. Print the results and exit with the appropriate exit code.
 var runVelocity = function (url) {
-  var unipackages = isopackets.load('ddp')
+  var unipackages = isopackets.load('ddp');
   var DDP = unipackages.ddp.DDP;
 
   // XXX maybe a startup message so users know the tests are running.
@@ -30,8 +30,8 @@ var runVelocity = function (url) {
 
       ddpConnection.subscribe("VelocityTestReports", {
         onError: function () {
-          Console.stderr.write("failed to subscribe to VelocityTestReports "
-                               + "subscription");
+          Console.wrapError("failed to subscribe to VelocityTestReports "
+                        + "subscription");
           // XXX tell user to add velocity:core
           // XXX these also fire if the user turns on autopublish
         }, onReady: function () {
@@ -65,8 +65,8 @@ var runVelocity = function (url) {
       var isFinished = false;
       ddpConnection.subscribe("VelocityAggregateReports", {
         onError: function () {
-          Console.stderr.write("failed to subscribe to " +
-                               "VelocityAggregateReports subscription");
+          Console.wrapError("failed to subscribe to " +
+                            "VelocityAggregateReports subscription");
         }, onReady: function () {
           this.connection.registerStore("velocityAggregateReports", {
             update: function (msg) {
@@ -113,7 +113,7 @@ var runVelocity = function (url) {
 
       ddpConnection.subscribe("VelocityMirrors", {
         onError: function (err) {
-          Console.stderr.write("failed to subscribe to VelocityMirrors " +
+          Console.wrapError("failed to subscribe to VelocityMirrors " +
                                "subscription", err);
         }, onReady: function () {
           this.connection.registerStore("velocityMirrors", {

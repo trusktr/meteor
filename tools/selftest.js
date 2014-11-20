@@ -1596,22 +1596,24 @@ var listTests = function (options) {
   var testList = getFilteredTests(options);
 
   if (! testList.allTests.length) {
-    Console.stderr.write("No tests defined.\n");
+    Console.wrapInfo("No tests defined.");
     return;
   }
 
   _.each(_.groupBy(testList.filteredTests, 'file'), function (tests, file) {
-    Console.stdout.write(file + ':\n');
+    Console.info(file + ':');
     _.each(tests, function (test) {
-      Console.stdout.write('  - ' + test.name +
-                           (test.tags.length ? ' [' + test.tags.join(' ') + ']'
-                            : ''));
+      Console.info('  - ' + test.name +
+                   (test.tags.length ? ' [' + test.tags.join(' ') + ']'
+                   : ''));
     });
   });
 
-  Console.stderr.write('\n');
-  Console.stderr.write(testList.filteredTests.length + " tests listed.");
-  Console.stderr.write(testList.generateSkipReport());
+  Console.error();
+  Console.wrapError(testList.filteredTests.length + " tests listed.");
+  // generateSkipReport handles specific formatting that we don't want to mess
+  // with.
+  Console.error(testList.generateSkipReport());
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1626,7 +1628,7 @@ var runTests = function (options) {
   var testList = getFilteredTests(options);
 
   if (! testList.allTests.length) {
-    Console.stderr.write("No tests defined.\n");
+    Console.wrapError("No tests defined.");
     return 0;
   }
 
@@ -1646,7 +1648,8 @@ var runTests = function (options) {
       if (e instanceof TestFailure) {
         failure = e;
       } else {
-        Console.stderr.write("exception\n\n");
+        Console.wrapError("exception");
+        Console.error();
         throw e;
       }
     } finally {
@@ -1655,15 +1658,18 @@ var runTests = function (options) {
     }
 
     if (failure) {
-      Console.stderr.write("fail!\n");
+      Console.wrapError("fail!");
       failedTests.push(test);
       testList.notifyFailed(test);
 
+      var arrow = "  => ";
       var frames = parseStack.parse(failure);
       var relpath = path.relative(files.getCurrentToolsDir(),
                                   frames[0].file);
-      Console.stderr.write("  => " + failure.reason + " at " +
-                           relpath + ":" + frames[0].line + "\n");
+      Console.wrapError(failure.reason + " at " +
+                        relpath + ":" + frames[0].line,
+                        Console.options({ bulletPoint: arrow }));
+
       if (failure.reason === 'no-match') {
       }
       if (failure.reason === "wrong-exit-code") {
@@ -1671,14 +1677,17 @@ var runTests = function (options) {
           return status.signal || ('' + status.code) || "???";
         };
 
-        Console.stderr.write("  => Expected: " + s(failure.details.expected) +
-                             "; actual: " + s(failure.details.actual) + "\n");
+        Console.wrapError("Expected: " + s(failure.details.expected) +
+                          "; actual: " + s(failure.details.actual),
+                          Console.options({ bulletPoint: arrow }));
+
       }
       if (failure.reason === 'expected-exception') {
       }
       if (failure.reason === 'not-equal') {
-        Console.stderr.write(
-          "  => Expected: " + JSON.stringify(failure.details.expected) +
+        // Don't autowrap JSON.
+        Console.error(
+            arrow + "Expected: " + JSON.stringify(failure.details.expected) +
             "; actual: " + JSON.stringify(failure.details.actual) + "\n");
       }
 
@@ -1686,52 +1695,60 @@ var runTests = function (options) {
         failure.details.run.outputLog.end();
         var lines = failure.details.run.outputLog.get();
         if (! lines.length) {
-          Console.stderr.write("  => No output\n");
+          Console.wrapError(
+              "No output",
+               Console.options({ bulletPoint: arrow }));
         } else {
           var historyLines = options.historyLines || 100;
 
-          Console.stderr.write("  => Last " + historyLines + " lines:\n");
+          Console.wrapError(
+              "Last " + historyLines + " lines:",
+              Console.options({ bulletPoint: arrow }));
           _.each(lines.slice(-historyLines), function (line) {
-            Console.stderr.write("  " +
-                                 (line.channel === "stderr" ? "2| " : "1| ") +
-                                 line.text +
-                                 (line.bare ? "%" : "") + "\n");
+            Console.error("  " +
+                          (line.channel === "stderr" ? "2| " : "1| ") +
+                          line.text +
+                          (line.bare ? "%" : ""));
           });
         }
       }
 
       if (failure.details.messages) {
-        Console.stderr.write("  => Errors while building:\n");
-        Console.stderr.write(failure.details.messages.formatMessages());
+        Console.wrapError(
+            "Errors while building:",
+            Console.options({ bulletPoint: arrow }));
+        Console.wrapError(
+            failure.details.messages.formatMessages(),
+            Console.options({ indent: arrow.length }));
       }
     } else {
       var durationMs = +(new Date) - startTime;
-      Console.stderr.write("ok (" + durationMs + " ms)\n");
+      Console.wrapError("ok (" + durationMs + " ms)");
     }
   });
 
   testList.saveTestState();
 
   if (totalRun > 0)
-    Console.stderr.write("\n");
+    Console.error();
 
-  Console.stderr.write(testList.generateSkipReport());
+  Console.wrapError(testList.generateSkipReport());
 
   if (testList.filteredTests.length === 0) {
-    Console.stderr.write("No tests run.\n");
+    Console.wrapError("No tests run.");
     return 0;
   } else if (failedTests.length === 0) {
     var disclaimers = '';
     if (testList.filteredTests.length < testList.allTests.length)
       disclaimers += " other";
-    Console.stderr.write("All" + disclaimers + " tests passed.\n");
+    Console.wrapError("All" + disclaimers + " tests passed.");
     return 0;
   } else {
     var failureCount = failedTests.length;
-    Console.stderr.write(failureCount + " failure" +
-                         (failureCount > 1 ? "s" : "") + ":\n");
+    Console.wrapError(failureCount + " failure" +
+                         (failureCount > 1 ? "s" : "") + ":");
     _.each(failedTests, function (test) {
-      Console.stderr.write("  - " + test.file + ": " + test.name);
+      Console.error("  - " + test.file + ": " + test.name);
     });
     return 1;
   }
