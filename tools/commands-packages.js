@@ -1994,8 +1994,8 @@ main.registerCommand({
   if (messages.hasMessages()) {
     // Constraint solver errors are intentionally formatted to be legible by
     // humans, so wrapping them is going to look odd.
-    Console.error("Error resolving constraints for packages:\n" +
-                  messages.formatMessages());
+    Console.wrapError("Error resolving constraints for packages:");
+    Console.wrapError(messages.formatMessages());
     return 1;
   }
 

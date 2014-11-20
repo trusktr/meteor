@@ -30,10 +30,11 @@ catalog.Refresh.OnceAtStart.prototype.beforeCommand = function () {
   var self = this;
   if (!catalog.refreshOrWarn(self.options)) {
     if (self.options.ignoreErrors) {
-      Console.debug("Failed to update package catalog, but will continue.");
+      Console.wrapDebug("Failed to update package catalog, but will continue.");
     } else {
       Console.printError(catalog.refreshError);
-      Console.error("This command requires an up-to-date package catalog.  Exiting.");
+      Console.wrapError(
+          "This command requires an up-to-date package catalog.  Exiting.");
       // Avoid circular dependency.
       throw new (require('./main.js').ExitWithCode)(1);
     }
@@ -78,7 +79,7 @@ catalog.refreshOrWarn = function (options) {
 
     // XXX is throwing correct for SQLite errors too? probably.
 
-    Console.warn("Unable to update package catalog (are you offline?)");
+    Console.wrapWarn("Unable to update package catalog (are you offline?)");
 
     // XXX: Make this Console.debug(err)
     if (Console.isDebugEnabled()) {
@@ -328,8 +329,9 @@ _.extend(LayeredCatalog.prototype, {
         // XXX: this shouldn't be here. This is library code... it
         // shouldn't be printing.
         // https://github.com/meteor/meteor/wiki/Meteor-Style-Guide#only-user-interface-code-should-engage-with-the-user
-        Console.info(
-          "\nIn order to resolve constraints, we had to use the following\n"+
+        Console.info();
+        Console.wrapInfo(
+            "In order to resolve constraints, we had to use the following\n"+
             "experimental package versions:");
         utils.printPackageList(expPackages);
       }

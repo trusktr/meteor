@@ -789,7 +789,7 @@ var buildCommand = function (options) {
     // We would like the output path to be outside the app directory, which
     // means the first step to getting there is going up a level.
     if (relative.substr(0, 3) !== ('..' + path.sep)) {
-      Console.warn("");
+      Console.warn();
       Console.wrapWarn(
         "Warning: The output directory is under your source tree.");
       Console.wrapWarn(
@@ -797,7 +797,7 @@ var buildCommand = function (options) {
         "Consider building into a different directory instead ("
           + Console.command("meteor build ../output") + ")",
         Console.options({ indent: 2 }));
-      Console.warn("");
+      Console.warn();
 
     }
   }
@@ -1124,10 +1124,10 @@ main.registerCommand({
   var buildArch = DEPLOY_ARCH;
   if (options['override-architecture-with-local']) {
     Console.warn();
-    Console.warnWrapped(
+    Console.wrapWarn(
       "WARNING: Overriding deploy architecture with your local architecture.",
       Console.options({ bulletPoint: " => " }));
-    Console.warnWrapped(
+    Console.wrapWarn(
       "If your app contains binary code, it may fail in a strange and",
       "unexpected manner",
       Console.options({ bulletPoint: " => " }));

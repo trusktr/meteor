@@ -162,7 +162,7 @@ _.extend(Db.prototype, {
         return f();
       } catch (err) {
         if (attempt < options.maxAttempts) {
-          Console.warn("Retrying after error", err);
+          Console.wrapWarn("Retrying after error", err);
         } else {
           throw err;
         }
@@ -224,7 +224,7 @@ _.extend(Db.prototype, {
           txn.close();
         } catch (e) {
           // We don't have a lot of options here...
-          Console.warn("Error closing transaction", e);
+          Console.wrapWarn("Error closing transaction", e);
         }
       }
 
@@ -233,7 +233,7 @@ _.extend(Db.prototype, {
       if (DEBUG_SQL) {
         var t2 = Date.now();
         // XXX: Hack around not having loggers
-        Console.info("Transaction took: ", (t2 - t1));
+        Console.wrapInfo("Transaction took: ", (t2 - t1));
       }
 
       if (resultError) {
@@ -272,14 +272,14 @@ _.extend(Db.prototype, {
     var self = this;
 
     if ( !fs.existsSync(path.dirname(dbFile)) ) {
-      Console.debug("Creating database directory", dbFile);
+      Console.wrapDebug("Creating database directory", dbFile);
 
       var folder = path.dirname(dbFile);
       if ( !files.mkdir_p(folder) )
         throw new Error("Could not create folder at " + folder);
     }
 
-    Console.debug("Opening db file", dbFile);
+    Console.wrapDebug("Opening db file", dbFile);
     return new sqlite3.Database(dbFile);
   },
 
@@ -322,7 +322,7 @@ _.extend(Db.prototype, {
       var t2 = Date.now();
       if ((t2 - t1) > 10) {
         // XXX: Hack around not having log levels
-        Console.info("SQL statement ", sql, " took ", (t2 - t1));
+        Console.wrapInfo("SQL statement ", sql, " took ", (t2 - t1));
       }
     }
 
@@ -375,7 +375,7 @@ _.extend(Db.prototype, {
     if (DEBUG_SQL) {
       var t2 = Date.now();
       if ((t2 - t1) > 10) {
-        Console.info("SQL statement ", sql, " took ", (t2 - t1));
+        Console.wrapInfo("SQL statement ", sql, " took ", (t2 - t1));
       }
     }
 
@@ -419,7 +419,7 @@ _.extend(Db.prototype, {
       });
       var err = future.wait();
       if (err) {
-        Console.warn("Error finalizing statement ", err);
+        Console.wrapWarn("Error finalizing statement ", err);
       }
     });
   }
@@ -717,7 +717,7 @@ _.extend(RemoteCatalog.prototype, {
       self.tableReleaseVersions,
       self.tablePackages,
       self.tableSyncToken,
-      self.tableMetadata ]
+      self.tableMetadata ];
     return self.db.runInTransaction(function(txn) {
       _.each(self.allTables, function (table) {
         table.createTable(txn);
@@ -744,7 +744,7 @@ _.extend(RemoteCatalog.prototype, {
     var self = this;
     options = options || {};
 
-    Console.debug("In remote catalog refresh");
+    Console.wrapDebug("In remote catalog refresh");
 
     if (process.env.METEOR_TEST_FAIL_RELEASE_DOWNLOAD === 'offline') {
       var e = new Error;
@@ -760,7 +760,8 @@ _.extend(RemoteCatalog.prototype, {
       Console.debug("lastSync = ", lastSync);
       if (lastSync && lastSync.timestamp) {
         if ((Date.now() - lastSync.timestamp) < options.maxAge) {
-          Console.debug("Package catalog is sufficiently up-to-date; not updating\n");
+          Console.wrapDebug(
+              "Package catalog is sufficiently up-to-date; not updating.");
           return false;
         }
       }
@@ -860,7 +861,7 @@ _.extend(RemoteCatalog.prototype, {
       self.tableReleaseVersions.upsert(txn, serverData.collections.releaseVersions);
 
       var syncToken = serverData.syncToken;
-      Console.debug("Adding syncToken: ", JSON.stringify(syncToken));
+      Console.wrapDebug("Adding syncToken: ", JSON.stringify(syncToken));
       syncToken._id = SYNCTOKEN_ID; //Add fake _id so it fits the pattern
       self.tableSyncToken.upsert(txn, [syncToken]);
 
@@ -884,7 +885,7 @@ _.extend(RemoteCatalog.prototype, {
     var result = self._contentQuery("SELECT content FROM syncToken WHERE _id=?",
                                     [ SYNCTOKEN_ID ]);
     if (!result || result.length === 0) {
-      Console.debug("No sync token found");
+      Console.wrapDebug("No sync token found");
       return null;
     }
     if (result.length !== 1) {

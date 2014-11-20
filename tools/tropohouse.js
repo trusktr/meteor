@@ -237,11 +237,12 @@ _.extend(exports.Tropohouse.prototype, {
 
     // Have everything we need? Great.
     if (!archesToDownload.length) {
-      Console.debug("Local package version is up-to-date:", packageName + "@" + version);
+      Console.wrapDebug(
+          "Local package version is up-to-date:", packageName + "@" + version);
       return;
     }
 
-    Console.debug("Downloading missing local versions of package",
+    Console.wrapDebug("Downloading missing local versions of package",
                   packageName + "@" + version, ":", archesToDownload);
 
     // Since we are downloading from the server (and we've already done the

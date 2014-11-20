@@ -230,9 +230,9 @@ _.extend(Project.prototype, {
       } catch (err) {
         // XXX This error handling is bogus. Use buildmessage instead, or
         // something. See also compiler.determineBuildTimeDependencies
-        Console.warn(
-          "Could not resolve the specified constraints for this project:\n"
-           + (err.constraintSolverError ? err : err.stack));
+        Console.wrapWarn(
+          "Could not resolve the specified constraints for this project:");
+        Console.warn((err.constraintSolverError ? err : err.stack));
         process.exit(1);
       }
 
@@ -246,7 +246,7 @@ _.extend(Project.prototype, {
       });
 
       if (!setV.success) {
-        Console.warn(
+        Console.wrapWarn(
           "Could not install all the requested packages.");
         process.exit(1);
       }
@@ -371,23 +371,25 @@ _.extend(Project.prototype, {
            options.onDiskPackages[packageName] !== version)) {
         // XXX maybe we shouldn't be letting the constraint solver choose
         // things that don't have the right arches?
-        Console.warn("Package " + packageName +
-                             " has no compatible build for version " +
-                             version);
+        Console.wrapWarn("Package " + packageName +
+                         " has no compatible build for version " +
+                         version);
         failed = true;
         return;
       }
 
-      // If the previous versions file had this, then we are upgrading, if it did
-      // not, then we must be adding this package anew.
+      // If the previous versions file had this, then we are upgrading, if it
+      // did not, then we must be adding this package anew.
       if (_.has(versions, packageName)) {
         if (packageVersionParser.lessThan(
           newVersions[packageName], versions[packageName])) {
-          messageLog.push(stdSpace + "downgraded " + packageName + " from version " +
+          messageLog.push(stdSpace + "downgraded " +
+                          packageName + " from version " +
                           versions[packageName] +
                           " to version " + newVersions[packageName]);
         } else {
-          messageLog.push(stdSpace + "upgraded " + packageName + " from version " +
+          messageLog.push(stdSpace + "upgraded " +
+                          packageName + " from version " +
                           versions[packageName] +
                           " to version " + newVersions[packageName]);
         }
@@ -404,7 +406,7 @@ _.extend(Project.prototype, {
     if ((!self.muted && !_.isEmpty(versions))
         || options.alwaysShow) {
       _.each(messageLog, function (msg) {
-        Console.info(msg);
+        Console.wrapInfo(msg);
       });
 
       // Pay special attention to non-backwards-compatible changes.
@@ -416,13 +418,13 @@ _.extend(Project.prototype, {
         if (!oldV) {
           return;
         }
-        // If this is a local package, then we are aware that this happened and it
-        // is not news.
+        // If this is a local package, then we are aware that this happened and
+        // it is not news.
         if (catalog.complete.isLocalPackage(package)) {
           return;
         }
-        // If we can't find the old version, then maybe that was a local package and
-        // now is not, and that is also not news.
+        // If we can't find the old version, then maybe that was a local package
+        // and now is not, and that is also not news.
         var oldVersion = catalog.complete.getVersion(package, oldV);
         var newRec = catalog.complete.getVersion(package, newV);
 
@@ -441,11 +443,13 @@ _.extend(Project.prototype, {
       });
 
       if (!_.isEmpty(incompatibleUpdates)) {
-        Console.warn(
-          "\nThe following packages have been updated to new versions that are not " +
-            "backwards compatible:");
-        utils.printPackageList(incompatibleUpdates, { level: Console.LEVEL_WARN });
-        Console.warn("\n");
+        Console.warn();
+        Console.wrapWarn(
+            "The following packages have been updated to new versions that",
+            "are not backwards compatible:");
+        utils.printPackageList(
+            incompatibleUpdates, { level: Console.LEVEL_WARN });
+        Console.warn();
       };
     }
     return 0;
@@ -463,8 +467,8 @@ _.extend(Project.prototype, {
     return path.join(self.rootDir, "programs");
   },
 
-  // Return the list of subdirectories containing programs in the project, mostly
-  // as subdirectories of the ProgramsDirectory. Used at bundling, and
+  // Return the list of subdirectories containing programs in the project,
+  // mostly as subdirectories of the ProgramsDirectory. Used at bundling, and
   // miscellaneous.
   //
   // Options are:
