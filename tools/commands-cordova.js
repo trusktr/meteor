@@ -1864,7 +1864,7 @@ _.extend(IOS.prototype, {
 
     var okay = true;
     if (self.hasXcode()) {
-      log && Console.wrapInfo(Console.success("Xcode is installed"));
+      log && Console.success("Xcode is installed");
     } else {
       if (fix) {
         log && Console.wrapInfo("Installing Xcode");
@@ -1888,7 +1888,7 @@ _.extend(IOS.prototype, {
 
     if (self.hasXcode()) {
       if (self.hasAgreedXcodeLicense()) {
-        log && Console.wrapInfo(Console.success("Xcode license agreed"));
+        log && Console.success("Xcode license agreed");
       } else {
         if (fix) {
           log && Console.wrapInfo("Please accept the Xcode license");
@@ -2627,7 +2627,7 @@ _.extend(Android.prototype, {
     var hasAndroid = false;
     if (!self.useGlobalAdk()) {
       if (self.hasAndroidBundle()) {
-        log && Console.wrapInfo(Console.success("Found Android bundle"));
+        log && Console.success("Found Android bundle");
         hasAndroid = true;
       } else {
         if (fixConsole) {
@@ -2647,7 +2647,7 @@ _.extend(Android.prototype, {
     if (self.useGlobalAdk()) {
       var androidSdk = self.findAndroidSdk(true);
       if (androidSdk) {
-        log && Console.wrapInfo(Console.success("Found Android SDK"));
+        log && Console.success("Found Android SDK");
 
         // XXX: Verify
         hasAndroid = true;
@@ -2664,7 +2664,7 @@ _.extend(Android.prototype, {
 
       var hasAnt = !!Host.which("ant");
       if (hasAnt) {
-        log && Console.wrapInfo(Console.success("Found ant on PATH"));
+        log && Console.success("Found ant on PATH");
       } else {
         log && Console.wrapInfo(Console.fail("Ant not found on PATH"));
 
@@ -2675,7 +2675,7 @@ _.extend(Android.prototype, {
 
     var hasJava = false;
     if (self.hasJdk()) {
-      log && Console.wrapInfo(Console.success("A JDK is installed"));
+      log && Console.success("A JDK is installed");
       hasJava = true;
     } else {
       if (fix) {
@@ -2693,16 +2693,14 @@ _.extend(Android.prototype, {
 
     if (hasAndroid && hasJava) {
       if (self.isPlatformToolsInstalled()) {
-        log && Console.wrapInfo(
-            Console.success("Found Android Platform tools"));
+        log && Console.success("Found Android Platform tools");
       } else {
         if (fixSilent) {
           log && Console.wrapInfo("Installing Android Platform tools");
           self.installTarget('platform-tools', function () {
             return self.isPlatformToolsInstalled();
           });
-          log && Console.wrapInfo(
-              Console.success("Installed Android Platform tools"));
+          log && Console.success("Installed Android Platform tools");
         } else {
           log && Console.wrapInfo(
               Console.fail("Android Platform tools not found"));
@@ -2714,7 +2712,7 @@ _.extend(Android.prototype, {
 
       var hasBuildToolsVersion;
       if (self.isBuildToolsInstalled('21.0.0')) {
-        log && Console.wrapInfo(Console.success("Found Android Build Tools"));
+        log && Console.success("Found Android Build Tools");
         hasBuildToolsVersion = '21.0.0';
       } else {
         if (fixSilent) {
@@ -2722,8 +2720,7 @@ _.extend(Android.prototype, {
           self.installTarget('build-tools-21.0.0', function () {
             return self.isBuildToolsInstalled('21.0.0');
           });
-          log && Console.wrapInfo(
-              Console.success("Installed Android Build Tools"));
+          log && Console.success("Installed Android Build Tools");
           hasBuildToolsVersion = '21.0.0';
         } else {
           log &&
@@ -2746,14 +2743,14 @@ _.extend(Android.prototype, {
       }
 
       if (self.isPlatformInstalled('android-19')) {
-        log && Console.wrapInfo(Console.success("Found Android 19 API"));
+        log && Console.success("Found Android 19 API");
       } else {
         if (fixSilent) {
           log && Console.info("Installing Android 19 API");
           self.installTarget('android-19', function () {
             return self.isPlatformInstalled('android-19');
           });
-          log && Console.wrapInfo(Console.success("Installed Android 19 API"));
+          log && Console.success("Installed Android 19 API");
         } else {
           log && Console.wrapInfo(Console.fail("Android API 19 not found"));
 
@@ -2764,8 +2761,7 @@ _.extend(Android.prototype, {
 
       // (We could alternatively check for {SDK}/system-images/android-19/default/x86/build.prop)
       if (self.hasTarget('19', 'default/x86')) {
-        log && Console.wrapInfo(
-            Console.success("Found suitable Android x86 image"));
+        log && Console.success("Found suitable Android x86 image");
       } else {
         if (fixSilent) {
           // The x86 image will fail to install if dependencies aren't there;
@@ -2781,8 +2777,7 @@ _.extend(Android.prototype, {
           self.installTarget('sys-img-x86-android-19', function () {
             return self.hasTarget('19', 'default/x86');
           });
-          log && Console.wrapInfo(
-              Console.success("Installed Android x86 image"));
+          log && Console.success("Installed Android x86 image");
         } else {
           log && Console.wrapInfo(
               Console.fail("Suitable Android x86 image not found"));
@@ -2794,9 +2789,8 @@ _.extend(Android.prototype, {
 
       var avdName = self.getAvdName();
       if (self.hasAvd(avdName)) {
-        log && Console.wrapInfo(
-            Console.success(
-                "'" + avdName + "' android virtual device (AVD) found"));
+        log && Console.success(
+            "'" + avdName + "' android virtual device (AVD) found");
       } else {
         var isDefaultAvd = avdName === DEFAULT_AVD_NAME;
         if (fixSilent && isDefaultAvd) {
@@ -2806,8 +2800,8 @@ _.extend(Android.prototype, {
           var avdOptions = {};
           self.createAvd(avdName, avdOptions);
 
-          log && Console.wrapInfo(Console.success(
-              "'" + avdName + "' android virtual device (AVD) created"));
+          log && Console.success(
+              "'" + avdName + "' android virtual device (AVD) created");
         } else {
           log && Console.wrapInfo(Console.fail(
               "'" + avdName + "' android virtual device (AVD) not found"));
@@ -2844,8 +2838,8 @@ _.extend(Android.prototype, {
       }
     } else if (hasAcceleration === true) {
       // (can be undefined)
-      log && Console.wrapInfo(Console.success(
-          "Android emulator acceleration is installed"));
+      log && Console.success(
+          "Android emulator acceleration is installed");
     }
 
     return result;

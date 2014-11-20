@@ -798,7 +798,8 @@ _.extend(Console.prototype, {
       dest.write(message + '\n');
     }
 
-    // XXX: Pause before showing the progress display, to prevent flicker/spewing messages
+    // XXX: Pause before showing the progress display, to prevent
+    // flicker/spewing messages
     // Repaint the progress display
     progressDisplay.repaint();
   },
@@ -807,9 +808,13 @@ _.extend(Console.prototype, {
     var self = this;
 
     if (! self._pretty) {
-      return message;
+      return self.wrapInfo(message);
     }
-    return chalk.green('\u2713 ' + message);  // CHECK MARK
+
+    var checkmark = chalk.green('\u2713');
+    return self.wrapInfo(
+        chalk.green(message),
+        Console.options({ bulletPoint: checkmark }));
   },
 
   fail: function (message) {
@@ -818,6 +823,9 @@ _.extend(Console.prototype, {
     if (! self._pretty) {
       return message;
     }
+
+
+
     return chalk.red('\u2717 ' + message);  // BALLOT X
   },
 
