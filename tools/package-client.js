@@ -226,7 +226,7 @@ var bundleSource = function (isopack, includeSources, packageDir) {
     name
   );
   if (! files.mkdir_p(sourcePackageDir)) {
-    Console.stderr.write('Failed to create temporary source directory: ' +
+    Console.wrapError('Failed to create temporary source directory: ' +
                          sourcePackageDir);
     return null;
   }
@@ -338,12 +338,12 @@ var createAndPublishBuiltPackage = function (conn, isopack) {
 
   // Note: we really want to do this before createPackageBuild, because the URL
   // we get from createPackageBuild will expire!
-  Console.stdout.write('Bundling build...\n');
+  Console.wrapInfo('Bundling build...');
   var bundleResult = bundleBuild(isopack);
   if (buildmessage.jobHasMessages())
     return;
 
-  Console.stdout.write('Creating package build...\n');
+  Console.wrapInfo('Creating package build...');
   var uploadInfo = exports.callPackageServer(conn,
     'createPackageBuild', {
       packageName: isopack.name,
@@ -351,21 +351,21 @@ var createAndPublishBuiltPackage = function (conn, isopack) {
       buildArchitectures: isopack.buildArchitectures()
   });
 
-  Console.stdout.write('Uploading build...\n');
+  Console.wrapInfo('Uploading build...');
   uploadTarball(uploadInfo.uploadUrl,
                 bundleResult.buildTarball);
 
-  Console.stdout.write('Publishing package build...\n');
+  Console.wrapInfo('Publishing package build...');
   exports.callPackageServer(conn,
             'publishPackageBuild',
             uploadInfo.uploadToken,
             bundleResult.tarballHash,
             bundleResult.treeHash);
 
-  Console.stdout.write('Published ' + isopack.name +
+  Console.wrapInfo('Published ' + isopack.name +
                        ', version ' + isopack.version);
-
-  Console.stdout.write('\nDone!\n');
+  Console.info();
+  Console.wrapInfo('Done.');
 };
 
 exports.createAndPublishBuiltPackage = createAndPublishBuiltPackage;
@@ -408,50 +408,50 @@ exports.publishPackage = function (packageSource, compileResult, conn, options) 
   } catch (e) {
     if (!e.versionParserError)
       throw e;
-    Console.stderr.write(e.error + "\n");
+    Console.wrapError(e.error);
     return 1;
   }
 
   // Check that we have a version.
   if (! version) {
-    Console.stderr.write(
-     "That package cannot be published because it doesn't have a version.\n");
+    Console.wrapError(
+     "That package cannot be published because it doesn't have a version.");
     return 1;
   }
 
   // Check that the version description is under the character limit. (We check
   // all string limits on the server, but this is the one that is mostly likely
   // to be wrong)
-  if (!packageSource.metadata.summary) {
-    Console.stderr.write("Please describe what your package does. \n");
-    Console.stderr.write("Set a summary in Package.describe in package.js. \n");
+  if (! packageSource.metadata.summary) {
+    Console.wrapError(
+      "Please describe what your package does by setting a summary",
+      "in Package.describe in package.js.");
     return 1;
   }
 
   if (packageSource.metadata.summary &&
       packageSource.metadata.summary.length > 100) {
-    Console.stderr.write("Description must be under 100 chars. \n");
-    Console.stderr.write("Publish failed. \n");
+    Console.wrapError("Package description must be under 100 chars.");
     return 1;
   }
 
   var catalog = require('./catalog.js');
 
   // Check that we are an authorized maintainer of this package.
-  if (!options['new']) {
+  if (! options['new']) {
     var packRecord = catalog.official.getPackage(name);
     if (!packRecord) {
-      Console.stderr.write('There is no package named ' + name +
-                           '. If you are creating a new package, use the --create flag. \n');
-      Console.stderr.write("Publish failed. \n");
+      Console.wrapError(
+          "There is no package named", name, ". If you are creating a new",
+          "package, use the --create flag.");
+      Console.wrapError("Publish failed.");
       return 1;
     }
 
-    if (!exports.amIAuthorized(name, conn, false)) {
-      Console.stderr.write(
-        'You are not an authorized maintainer of ' + name + ".\n");
-      Console.stderr.write(
-        'Only authorized maintainers may publish new versions. \n');
+    if (! exports.amIAuthorized(name, conn, false)) {
+      Console.wrapError(
+        "You are not an authorized maintainer of", name + ".",
+        "Only authorized maintainers may publish new versions.");
       return 1;
     }
   }
@@ -491,10 +491,10 @@ exports.publishPackage = function (packageSource, compileResult, conn, options) 
   // then we should force the user to specify them. This is because we are not
   // sure about pre-0.90 package versions yet.
   if (!_.isEqual(badConstraints, [])) {
-    Console.stderr.write(
-      "You must specify a version constraint for the following packages:");
+    Console.wrapError(
+        "You must specify a version constraint for the following packages:");
     _.each(badConstraints, function(bad) {
-      Console.stderr.write(" " + bad);
+      Console.error(" " + bad);
     });
     process.exit(1);
   }
@@ -525,11 +525,11 @@ exports.publishPackage = function (packageSource, compileResult, conn, options) 
     });
 
   if (messages.hasMessages()) {
-    Console.stderr.write(messages.formatMessages());
+    Console.wrapError(messages.formatMessages());
     return 1;
   }
 
-  Console.stdout.write('Bundling source...\n');
+  Console.wrapInfo('Bundling source...');
 
   var sources = _.union(compileResult.sources, testFiles);
 
@@ -546,14 +546,14 @@ exports.publishPackage = function (packageSource, compileResult, conn, options) 
 
   // Create the package. Check that the metadata exists.
   if (options.new) {
-    Console.stdout.write('Creating package...\n');
+    Console.wrapInfo('Creating package...');
     try {
       var packageId = exports.callPackageServer(conn,
         'createPackage', {
             name: packageSource.name
         });
     } catch (err) {
-      Console.stderr.write(err.message + "\n");
+      Console.wrapError(err.message);
       return 3;
     }
 
@@ -562,18 +562,18 @@ exports.publishPackage = function (packageSource, compileResult, conn, options) 
   if (options.existingVersion) {
     var existingRecord = catalog.official.getVersion(name, version);
     if (!existingRecord) {
-      Console.stderr.write("Version does not exist.\n");
+      Console.wrapError("Version does not exist.");
       return 1;
     }
     if (existingRecord.source.treeHash !== sourceBundleResult.treeHash) {
-      Console.stderr.write(
-        "Package source differs from the existing version.\n");
+      Console.wrapError(
+        "Package source differs from the existing version.");
       return 1;
     }
 
     // XXX check that we're actually providing something new?
   } else {
-    Console.stdout.write('Creating package version...\n');
+    Console.wrapInfo('Creating package version...');
 
     var uploadRec = {
       packageName: packageSource.name,
@@ -589,8 +589,8 @@ exports.publishPackage = function (packageSource, compileResult, conn, options) 
       var uploadInfo = exports.callPackageServer(conn,
         'createPackageVersion', uploadRec);
     } catch (err) {
-      Console.stderr.write("Error creating package version: " +
-                           (err.reason || err.message) + "\n");
+      Console.wrapError("Error creating package version: " +
+                           (err.reason || err.message));
       return 3;
     }
 
@@ -598,10 +598,10 @@ exports.publishPackage = function (packageSource, compileResult, conn, options) 
     // telling them to try 'meteor publish-for-arch' if they want to
     // publish a new build.
 
-    Console.stdout.write('Uploading source...\n');
+    Console.wrapInfo('Uploading source...');
     uploadTarball(uploadInfo.uploadUrl, sourceBundleResult.sourceTarball);
 
-    Console.stdout.write('Publishing package version...\n');
+    Console.wrapInfo('Publishing package version...');
     try {
       exports.callPackageServer(conn,
                         'publishPackageVersion',
@@ -609,8 +609,8 @@ exports.publishPackage = function (packageSource, compileResult, conn, options) 
                         { tarballHash: sourceBundleResult.tarballHash,
                           treeHash: sourceBundleResult.treeHash });
     } catch (err) {
-      Console.stderr.write("Error publishing package version: " +
-                           (err.reason || err.message) + "\n");
+      Console.wrapError("Error publishing package version: " +
+                           (err.reason || err.message));
       return 3;
     }
 

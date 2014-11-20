@@ -44,7 +44,8 @@ _.extend(RunCommand.prototype, {
           }
         });
       }
-      Console.debug("Running command", envString, self.command, self.args.join(' '));
+      Console.debug(
+          "Running command", envString, self.command, self.args.join(' '));
     }
 
     self.process = child_process.spawn( self.command,
@@ -112,7 +113,7 @@ _.extend(RunCommand.prototype, {
 
     self.start();
     if (self.options.detached) {
-      Console.debug("run called on detached process; won't wait");
+      Console.wrapDebug("run called on detached process; won't wait");
       return undefined;
     }
     self.waitForExit();
@@ -121,4 +122,3 @@ _.extend(RunCommand.prototype, {
 });
 
 exports.RunCommand = RunCommand;
-
