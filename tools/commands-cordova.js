@@ -89,7 +89,7 @@ cordova.buildTargets = function (localPath, targets, options) {
 
     if (! inProject) {
       if (! supported) {
-        Console.warn(Console.fail(MESSAGE_IOS_ONLY_ON_MAC));
+        Console.failWarn(MESSAGE_IOS_ONLY_ON_MAC);
       } else {
         Console.wrapWarn(
           "Please add the " + displayPlatform +
@@ -124,7 +124,7 @@ cordova.buildTargets = function (localPath, targets, options) {
           "To install the platform, please run:");
         Console.warn(Console.bold("meteor install-sdk " + platform));
       } else
-        Console.wrapWarn(Console.fail(MESSAGE_IOS_ONLY_ON_MAC));
+        Console.failWarn(MESSAGE_IOS_ONLY_ON_MAC);
 
       throw new main.ExitWithCode(2);
     }
@@ -1871,7 +1871,7 @@ _.extend(IOS.prototype, {
 
         self.installXcode();
       } else {
-        log && Console.wrapInfo(Console.fail("Xcode is not installed"));
+        log && Console.failInfo("Xcode is not installed");
 
         result.missing.push("xcode");
         result.acceptable = false;
@@ -1897,8 +1897,7 @@ _.extend(IOS.prototype, {
 
           // XXX: Wait?
         } else {
-          log && Console.wrapInfo(
-                Console.fail("You must accept the Xcode license"));
+          log && Console.failInfo("You must accept the Xcode license");
           result.missing.push("xcode-license");
           result.acceptable = false;
         }
@@ -2636,7 +2635,7 @@ _.extend(Android.prototype, {
           self.installAndroidBundle();
           hasAndroid = true;
         } else {
-          log && Console.wrapInfo(Console.fail("Android bundle not found"));
+          log && Console.failInfo("Android bundle not found");
 
           result.missing.push("android-bundle");
           result.acceptable = false;
@@ -2652,7 +2651,7 @@ _.extend(Android.prototype, {
         // XXX: Verify
         hasAndroid = true;
       } else {
-        log && Console.wrapInfo(Console.fail("Android SDK not found"));
+        log && Console.failInfo("Android SDK not found");
 
         log && Console.wrapInfo(
             "If you set USE_GLOBAL_ADK, the 'android' tool must",
@@ -2666,7 +2665,7 @@ _.extend(Android.prototype, {
       if (hasAnt) {
         log && Console.success("Found ant on PATH");
       } else {
-        log && Console.wrapInfo(Console.fail("Ant not found on PATH"));
+        log && Console.failInfo("Ant not found on PATH");
 
         result.missing.push("apache-ant");
         result.acceptable = false;
@@ -2684,7 +2683,7 @@ _.extend(Android.prototype, {
         self.installJdk();
         hasJava = true;
       } else {
-        log && Console.wrapInfo(Console.fail("A JDK is not installed"));
+        log && Console.failInfo("A JDK is not installed");
 
         result.missing.push("jdk");
         result.acceptable = false;
@@ -2702,8 +2701,7 @@ _.extend(Android.prototype, {
           });
           log && Console.success("Installed Android Platform tools");
         } else {
-          log && Console.wrapInfo(
-              Console.fail("Android Platform tools not found"));
+          log && Console.fail("Android Platform tools not found");
 
           result.missing.push("android-platform-tools");
           result.acceptable = false;
@@ -2723,8 +2721,7 @@ _.extend(Android.prototype, {
           log && Console.success("Installed Android Build Tools");
           hasBuildToolsVersion = '21.0.0';
         } else {
-          log &&
-              Console.wrapInfo(Console.fail("Android Build Tools not found"));
+          log && Console.failInfo("Android Build Tools not found");
 
           result.missing.push("android-build-tools");
           result.acceptable = false;
@@ -2735,7 +2732,7 @@ _.extend(Android.prototype, {
         // Check that we can actually run aapt - on 64 bit, we need 32 bit libs
         // We need aapt to be installed to do this!
         if (!self.canRunAapt(hasBuildToolsVersion)) {
-          log && Console.wrapInfo(Console.fail("32-bit libraries not found"));
+          log && Console.failInfo("32-bit libraries not found");
 
           result.missing.push("libs32");
           result.acceptable = false;
@@ -2752,7 +2749,7 @@ _.extend(Android.prototype, {
           });
           log && Console.success("Installed Android 19 API");
         } else {
-          log && Console.wrapInfo(Console.fail("Android API 19 not found"));
+          log && Console.failInfo("Android API 19 not found");
 
           result.missing.push("android-api");
           result.acceptable = false;
@@ -2779,8 +2776,7 @@ _.extend(Android.prototype, {
           });
           log && Console.success("Installed Android x86 image");
         } else {
-          log && Console.wrapInfo(
-              Console.fail("Suitable Android x86 image not found"));
+          log && Console.failInfo("Suitable Android x86 image not found");
 
           result.missing.push("android-sys-img");
           result.acceptable = false;
@@ -2803,8 +2799,8 @@ _.extend(Android.prototype, {
           log && Console.success(
               "'" + avdName + "' android virtual device (AVD) created");
         } else {
-          log && Console.wrapInfo(Console.fail(
-              "'" + avdName + "' android virtual device (AVD) not found"));
+          log && Console.failInfo(
+              "'" + avdName + "' android virtual device (AVD) not found");
 
           if (!isDefaultAvd) {
             log && Console.wrapInfo(
@@ -2824,8 +2820,8 @@ _.extend(Android.prototype, {
       if (fix) {
         self.installAcceleration();
       } else {
-        log && Console.wrapInfo(Console.fail(
-            "Android emulator acceleration is not installed"));
+        log && Console.failInfo(
+            "Android emulator acceleration is not installed");
         log && Console.wrapInfo(
           "(The Android emulator will be very slow without acceleration)",
           Console.options({ indent: 2 }));
@@ -3088,7 +3084,7 @@ main.registerCommand({
       { log:true, fix: false, fixConsole: true, fixSilent: true } );
   if (!_.isEmpty(installed.missing)) {
     if (Host.isLinux() && platform === "ios") {
-      Console.wrapWarn(Console.fail(MESSAGE_IOS_ONLY_ON_MAC));
+      Console.failWarn(MESSAGE_IOS_ONLY_ON_MAC);
       return 1;
     }
 
@@ -3101,9 +3097,11 @@ main.registerCommand({
       host = "Linux";
     }
     if (host) {
-      var wikiPage = "Mobile-Dev-Install:-" + capitalize(platform) + "-on-" + host;
+      var wikiPage =
+          "Mobile-Dev-Install:-" + capitalize(platform) + "-on-" + host;
       var anchor = installed.missing.length ? installed.missing[0] : null;
-      var url = "https://github.com/meteor/meteor/wiki/" + wikiPage; // URL escape?
+      var url =
+          "https://github.com/meteor/meteor/wiki/" + wikiPage; // URL escape?
       if (anchor) {
         url += "#" + anchor;
       }

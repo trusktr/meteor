@@ -817,16 +817,27 @@ _.extend(Console.prototype, {
         Console.options({ bulletPoint: checkmark }));
   },
 
-  fail: function (message) {
+  failInfo: function (message) {
+    var self = this;
+    return self._fail(message, self.wrapInfo);
+  },
+
+  failWarn: function (message) {
+    var self = this;
+    return self._fail(message, self.wrapWarn);
+  },
+
+  _fail: function (message, printFn) {
     var self = this;
 
     if (! self._pretty) {
-      return message;
+      return printFn(message);
     }
 
-
-
-    return chalk.red('\u2717 ' + message);  // BALLOT X
+    var xmark = chalk.red('\u2717');
+    return printFn(
+        chalk.red(message),
+        Console.options({ bulletPoint: xmark }));
   },
 
   command: function (message) {
