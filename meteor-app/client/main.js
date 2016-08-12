@@ -18,7 +18,5 @@
 
 
 // --- Entrypoint
-
-import C from './C'
 import A from './A'
-console.log('Entrypoint', new C, new A)
+console.log('Entrypoint', new A)
