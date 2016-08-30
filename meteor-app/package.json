@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "babel-runtime": "^6.9.2",
+    "document-register-element": "^1.0.7",
     "meteor-node-stubs": "~0.2.0"
   }
 }

@@ -1,1 +1,1 @@
-export const foo = "foo"
+import 'document-register-element'
