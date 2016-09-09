@@ -5,8 +5,8 @@
     "start": "meteor run"
   },
   "dependencies": {
+    "@webcomponents/custom-elements": "^1.0.0-alpha.3",
     "babel-runtime": "^6.9.2",
-    "meteor-node-stubs": "~0.2.0",
-    "webcomponents.js": "webcomponents/webcomponentsjs#v1"
+    "meteor-node-stubs": "~0.2.0"
   }
 }

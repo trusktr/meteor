@@ -1,2 +1,2 @@
-import 'webcomponents.js/src/CustomElements/v1/native-shim'
-import 'webcomponents.js/src/CustomElements/v1/CustomElements'
+import '@webcomponents/custom-elements/src/native-shim'
+import '@webcomponents/custom-elements/src/custom-elements'
