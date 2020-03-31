@@ -1,0 +1,7 @@
+{
+  "name": "meteor",
+  "private": true,
+  "scripts": {
+    "test": "./meteor test-packages"
+  }
+}
