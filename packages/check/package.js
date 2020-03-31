@@ -4,10 +4,10 @@ Package.describe({
 });
 
 Package.onUse(api => {
-  api.use('ecmascript');
+  api.use('typescript');
   api.use('ejson');
 
-  api.mainModule('match.js');
+  api.mainModule('match.ts');
 
   api.export('check');
   api.export('Match');

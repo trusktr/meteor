@@ -1,11 +1,20 @@
 // XXX docs
 import { isPlainObject } from './isPlainObject';
 
+// TODO cross-package types, or at least global types for well-known Meteor
+// packages
+declare const Meteor: any;
+declare const EJSON: any;
+
 // Things we explicitly do NOT support:
 //    - heterogenous arrays
 
 const currentArgumentChecker = new Meteor.EnvironmentVariable;
 const hasOwn = Object.prototype.hasOwnProperty;
+
+// TODO complete the Pattern definition from https://www.typescriptlang.org/v2/en/play?#code/C4TwDgpgBACghsYEBOA7KBeAUFXUA+UokA9gGZQDKwyAlqgOY56HETlQByArgLYBGKKM1ytw7CgCESJADYQ4qEQSLiOAeX4ArCAGNgywt1QATCGXoQTwvCtTdZsmyygBtAOQB9T4pDf3ALpQAPTBUACyCLoAFgB0AIKoIIZuXp70SAwo-kGhEVFxAJKomSgprvCIKKgBynmEAMIkvGAkAM60SJVIaCkA3m4A1gBcUG009AwBo93VUAC+WFihbFBNLe2dELNomFADriNjE4zTsAg96IvLYbokqONQJKPrrR1dF3MY+1h3D8BPGafXbfPrKMgyUbUOiMAA0yn4cGQox4AhQ8NsshIyAgvFG0jkClQGLwJhIEDanBIwAAogAPWjjUbGMwWVBWEm4NrNCDAaKTHiOUb2RycqCFMBtPijDzeXw5MWKYqlZGpbwZCBZZAK5Ts8ZWTQ6fSjMG2WwQ55cPiCZDKeaK1DxZDIOAgGUE+SKWrzIA
+type Pattern = typeof String | typeof Number | CompositePattern
+type CompositePattern = { [k: string]: Pattern }
 
 /**
  * @summary Check that a value matches a [pattern](#matchpatterns).
@@ -17,7 +26,7 @@ const hasOwn = Object.prototype.hasOwnProperty;
  * @param {Any} value The value to check
  * @param {MatchPattern} pattern The pattern to match `value` against
  */
-export function check(value, pattern) {
+export function check(value: any, pattern: MatchPattern) {
   // Record that check got called, if somebody cared.
   //
   // We use getOrNullIfOutsideFiber so that it's OK to call check()
@@ -125,46 +134,36 @@ export const Match = {
 };
 
 class Optional {
-  constructor(pattern) {
-    this.pattern = pattern;
-  }
+  constructor(public pattern) {}
 }
 
 class Maybe {
-  constructor(pattern) {
-    this.pattern = pattern;
-  }
+  constructor(public pattern) {}
 }
 
 class OneOf {
-  constructor(choices) {
-    if (!choices || choices.length === 0) {
+  constructor(public choices) {
+    if (!this.choices || this.choices.length === 0) {
       throw new Error('Must provide at least one choice to Match.OneOf');
     }
-
-    this.choices = choices;
   }
 }
 
 class Where {
-  constructor(condition) {
-    this.condition = condition;
-  }
+  constructor(public condition) {}
 }
 
 class ObjectIncluding {
-  constructor(pattern) {
-    this.pattern = pattern;
-  }
+  constructor(public pattern) {}
 }
 
 class ObjectWithValues {
-  constructor(pattern) {
-    this.pattern = pattern;
-  }
+  constructor(public pattern) {}
 }
 
-const stringForErrorMessage = (value, options = {}) => {
+interface stringForErrorMessageOptions{ onlyShowType?: boolean }
+
+const stringForErrorMessage = (value, options: stringForErrorMessageOptions = {}) => {
   if ( value === null ) {
     return 'null';
   }
@@ -468,7 +467,7 @@ const testSubtree = (value, pattern) => {
 };
 
 class ArgumentChecker {
-  constructor (args, description) {
+  constructor (public args, public description) {
 
     // Make a SHALLOW copy of the arguments. (We'll be doing identity checks
     // against its contents.)

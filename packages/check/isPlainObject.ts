@@ -12,7 +12,7 @@ const ObjectFunctionString = fnToString.call(Object);
 
 const getProto = Object.getPrototypeOf;
 
-export const isPlainObject = obj => {
+export const isPlainObject = (obj: unknown): obj is object => {
   let proto;
   let Ctor;
 
